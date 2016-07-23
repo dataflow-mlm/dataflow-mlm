@@ -1,0 +1,83 @@
+Model M3@2 {
+  Node Element {
+    _id  : String;
+    name : String;
+  }
+  Node DataType : Element {
+    process : ProcessType[*];
+  }
+  Node ProcessType : Element {
+    data : DataType[*];
+  }
+  Edge port (DataType.process,ProcessType.data) {}
+}
+
+M3 M2 {
+  abstract DataType Data {
+    _in  : Process[0..1] {process};
+    _out : Process[0..1] {process};
+  }
+  abstract DataType Table : Data {}
+  DataType EventData : Table {
+    eventId   : int;
+    timeStr   : String;
+    millisStr : String;
+    value     : String;
+  }
+  DataType TemporaryData : Table {
+    eventId   : int;
+    timeStr   : String;
+    millisStr : String;
+    value     : String;
+    timestamp : String;
+  }
+  abstract DataType _Model : Data {}
+  DataType SVMModel : _Model {}
+  abstract ProcessType Process {}
+  ProcessType AddTimestamp : Process{
+    _in      : Table[0..1] {data};
+    _out     : Table[0..1] {data};
+    time     : String;
+    millis   : String;
+    storedIn : String;
+  }
+  ProcessType Duplication : Process {
+    _in  : Data[0..1] {data};
+    _out : Data[*] {data};
+  }
+  ProcessType Filter : Process {
+    _in  : Data[0..1] {data};
+    _out : Data[0..1] {data};
+    fieldName : String;
+    equals    : String;
+  }
+  port AT_in  (Data._out, AddTimestamp._in) {}
+  port AT_out (Data._in, AddTimestamp._out) {}
+  port D_in   (Data._out, Duplication._in) {}
+  port D_out  (Data._in, Duplication._out) {}
+  port F_in   (Data._out, Filter._in) {}
+  port F_out  (Data._in, Filter._out) {}
+}
+
+M2 M1{
+  EventData     d1 { _id = 1; name = d1; }
+  AddTimestamp  p1 { _id = 2; name = p1;
+    time = timeStr;
+    millis = millisStr;
+    storedIn = timestamp; }
+  TemporaryData d2 { _id = 3; name = d2; }
+  Duplication   p2 { _id = 4; name = p2; }
+  TemporaryData d3 { _id = 5; name = d3; }
+  TemporaryData d4 { _id = 6; name = d4; }
+  Filter        p3 { _id = 7; name = p3;
+    fieldName = value;
+    equals = hoge; }
+  TemporaryData d6 { _id = 8; name = d6; }
+  AT_in (d1, p1);
+  AT_out(d2, p1);
+  D_in  (d2, p2);
+  D_out (d3, p2);
+  D_out (d4, p2);
+  F_in  (d4, p3);
+  F_out (d6, p3);
+}

@@ -1,0 +1,89 @@
+Model M3@2 {
+  Node Element {
+    _id  : String;
+    name : String;
+  }
+  Node DataType : Element {
+    process : ProcessType[*];
+    control : ControlType[*];
+  }
+  Node ProcessType : Element {
+    data : DataType[*];
+    control : ControlType[*];
+  }
+  Node ControlType : Element {
+    process : ProcessType[*];
+    data : DataType[*];
+  }
+  Edge port (DataType.process, ProcessType.data) {}
+  Edge pr (ControlType.process, ProcessType.control) {}
+  Edge dt (ControlType.data,DataType.control) {}
+}
+
+M3 M2 {
+  abstract DataType Data {
+    _in  : Process[0..1] {process};
+    _out : Process[0..1] {process};
+    ctrl : Control[*] {control};
+  }
+  abstract DataType Table : Data {}
+  DataType EventData : Table {
+    eventId   : int;
+    timeStr   : String;
+    millisStr : String;
+    value     : String;
+  }
+  DataType TemporaryData : Table {
+    eventId   : int;
+    timeStr   : String;
+    millisStr : String;
+    value     : String;
+    timestamp : String;
+  }
+  abstract DataType _Model : Data {}
+  DataType SVMModel : _Model {}
+  abstract ProcessType Process {
+    ctrl : Control[*] {control};
+  }
+  ProcessType AddTimestamp : Process{
+    _in      : Table[0..1] {data};
+    _out     : Table[0..1] {data};
+    time     : String;
+    millis   : String;
+    storedIn : String;
+  }
+  ProcessType Duplication : Process {
+    _in  : Data[0..1] {data};
+    _out : Data[*] {data};
+  }
+  abstract ControlType Control {}
+  ControlType Schedule : Control {
+    target : Process[*] {process};
+    runOn : String;
+  }
+  port AT_in  (Data._out, AddTimestamp._in) {}
+  port AT_out (Data._in, AddTimestamp._out) {}
+  port D_in   (Data._out, Duplication._in) {}
+  port D_out  (Data._in, Duplication._out) {}
+  pr S_pr   (Schedule.target, Process.ctrl) {}
+}
+
+M2 M1{
+  EventData     d1 { _id = 1; name = d1; }
+  AddTimestamp  p1 { _id = 2; name = p1;
+    time = timeStr;
+    millis = millisStr;
+    storedIn = timestamp; }
+  TemporaryData d2 { _id = 3; name = d2; }
+  Duplication   p2 { _id = 4; name = p2; }
+  TemporaryData d3 { _id = 5; name = d3; }
+  TemporaryData d4 { _id = 6; name = d4; }
+  Schedule      s_p2 { _id = 8; name = s_p2;
+    runOn = "H 9-21 * * 1-5"; }
+  AT_in (d1, p1);
+  AT_out(d2, p1);
+  D_in  (d2, p2);
+  D_out (d3, p2);
+  D_out (d4, p2);
+  S_pr  (s_p2, p2);
+}

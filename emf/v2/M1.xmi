@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:M2="platform:/resource/mlm.dataflow.ecore/model/v2/M2.ecore">
+  <M2:EventData id="1" name="d1"/>
+  <M2:TemporaryData id="3" name="d2" type=""/>
+  <M2:TemporaryData id="5" name="d3"/>
+  <M2:TemporaryData id="6" name="d4"/>
+  <M2:TemporaryData id="9" name="d6"/>
+  <M2:AddTimestamp id="2" name="p1" in="1" out="3" time="timeStr" millis="millisStr" storedIn="timestamp"/>
+  <M2:Duplication id="4" name="p2" in="3" out="5 6"/>
+  <M2:Filter id="8" name="p3" fieldName="value" equals="hoge" in="6" out="9"/>
+</xmi:XMI>
