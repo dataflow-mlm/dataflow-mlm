@@ -4,18 +4,14 @@ Model M3@2 {
     name : String;
   }
   Node DataType : Element {
-    process : ProcessType[*];
   }
   Node ProcessType : Element {
-    data : DataType[*];
+    port : DataType[*];
   }
-  Edge port (DataType.process,ProcessType.data) {}
 }
 
 M3 M2 {
   abstract DataType Data {
-    _in  : Process[0..1] {process};
-    _out : Process[0..1] {process};
   }
   abstract DataType Table : Data {}
   DataType EventData : Table {
@@ -35,35 +31,32 @@ M3 M2 {
   DataType SVMModel : _Model {}
   abstract ProcessType Process {}
   ProcessType AddTimestamp : Process{
-    _in      : Table[0..1] {data};
-    _out     : Table[0..1] {data};
+    _in      : Table[0..1] {port};
+    _out     : Table[0..1] {port};
     time     : String;
     millis   : String;
     storedIn : String;
   }
   ProcessType Duplication : Process {
-    _in  : Data[0..1] {data};
-    _out : Data[*] {data};
+    _in  : Data[0..1] {port};
+    _out : Data[*] {port};
   }
-  port AT_in  (Data._out, AddTimestamp._in) {}
-  port AT_out (Data._in, AddTimestamp._out) {}
-  port D_in   (Data._out, Duplication._in) {}
-  port D_out  (Data._in, Duplication._out) {}
 }
 
 M2 M1{
-  EventData     d1 { _id = 1; name = d1; }
-  AddTimestamp  p1 { _id = 2; name = p1;
-    time = timeStr;
-    millis = millisStr;
-    storedIn = timestamp; }
-  TemporaryData d2 { _id = 3; name = d2; }
-  Duplication   p2 { _id = 4; name = p2; }
-  TemporaryData d3 { _id = 5; name = d3; }
-  TemporaryData d4 { _id = 6; name = d4; }
-  AT_in (d1, p1);
-  AT_out(d2, p1);
-  D_in  (d2, p2);
-  D_out (d3, p2);
-  D_out (d4, p2);
+  EventData     d1 { _id = "1"; name = "d1"; }
+  AddTimestamp  p1 {
+    _id = "2";
+    name = "p1";
+    time = "timeStr";
+    millis = "millisStr";
+    storedIn = "timestamp";
+    _in = d1;
+    _out = d2;
+  }
+  TemporaryData d2 { _id = "3"; name = "d2"; }
+  Duplication   p2 { _id = "4"; name = "p2"; _in = d2; _out = [d3, d4]; }
+  TemporaryData d3 { _id = "5"; name = "d3"; }
+  TemporaryData d4 { _id = "6"; name = "d4"; }
+
 }
